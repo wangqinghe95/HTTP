@@ -71,7 +71,7 @@ public:
     }
 
     typedef void (*outputFunc)(const char* msg, int len);
-    typedef void(*flushFunc);
+    typedef void (*flushFunc)();
 
     static void setOutput(outputFunc);
     static void setFlush(flushFunc);
@@ -96,5 +96,7 @@ private:
 
     Impl m_impl;
 };
+
+const char* strerror_tl(int savedErrno);
 
 #endif
