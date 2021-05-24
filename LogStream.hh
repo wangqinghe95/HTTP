@@ -75,6 +75,7 @@ public:
     self& operator<<(double);
     self& operator<<(char v);
     self& operator<<(const char *);
+    self& operator<<(const std::string& s);
 
     void append(const char* data, int len){
         return m_buffer.append(data, len);
