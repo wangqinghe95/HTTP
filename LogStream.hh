@@ -44,6 +44,14 @@ public:
         return m_data;
     }
 
+    void reset(){
+        m_cur = m_data;
+    }
+
+    void bzero(){
+        ::bzero(m_data, sizeof(m_data));
+    }
+
 private:
     char m_data[SIZE];
     char* m_cur;    //指向的是当前字符串尾部保存的位置，其中字符串是保存在 m_data 中
