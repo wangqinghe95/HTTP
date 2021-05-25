@@ -31,12 +31,12 @@ namespace FileUtil{
         explicit AppendFile(StringArg filePath);
         ~AppendFile();
 
-        void append(const char* logline, const size_t len);
+        void append(const char* logline, const size_t len); //调用系统函数 fwrite 函数写入文件
         size_t write(const char* logline, const size_t len);
 
-        void flush();
+        void flush();   //刷新缓存
 
-        off_t writtenBytes() const{
+        off_t writtenBytes() const{ //获取已写字节数
             return m_writtenBytes;
         }
     };
