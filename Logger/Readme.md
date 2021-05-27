@@ -3,4 +3,4 @@
 
 
 [摘自](https://www.cnblogs.com/ailumiyana/p/9519614.html)
-[Github](https://github.com/kanade2010/SimpleMuduo/blob/master/AsyncLogging/LogStream.cpp)
+[Github](https://github.com/kanade2010/SimpleMuduo/blob/master/AsyncLogging/)

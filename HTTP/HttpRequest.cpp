@@ -4,6 +4,7 @@
 #include <sys/uio.h>    //readv
 #include <unistd.h> //read
 #include <string>
+#include <fstream>
 
 const std::map<std::string, int>::value_type init_value[] = 
 {
@@ -90,10 +91,26 @@ InetAddress::InetAddress(std::string ip, uint16_t port)
     sockets::fromIpPort(ip.c_str(), port, &m_addr);
 }
 
+InetAddress::~InetAddress()
+{
+    
+}
+
 uint32_t InetAddress::ipNetEndian() const
 {
     assert(family() == AF_INET);
     return m_addr.sin_addr.s_addr;
+}
+
+HttpRequest::HttpRequest(std::string httpUrl)
+  :m_httpUrl(httpUrl)
+{
+
+}
+
+HttpRequest::~HttpRequest()
+{
+
 }
 
 void HttpRequest::connect()
@@ -188,7 +205,7 @@ void HttpRequest::handleRead()
 
     m_buffer.hasWritten(nread);
 
-    std::cout << "sockets::read(): nread: " << nread << " remain: " << m_buffer.writableBytes() << std::endl;
+    std::cout << "sockets::read(): nread: " << nread << " remain: " << m_buffer.wirteableBytes() << std::endl;
 
     size_t remain = kBufferSize - nread;
     while (remain > 0)
@@ -266,7 +283,7 @@ void HttpRequest::uploadFile(const std::string& file, const std::string& content
             size_t n = fread(m_buffer.beginWrite(), 1, m_buffer.wirteableBytes(), fp);
             m_buffer.hasWritten(n);
             if (0 == n){
-                int err = ferror(n);
+                int err = ferror(fp);
                 if (err){
                     fprintf(stderr, "fread failed: %s\n", strerror(err));
                 }
@@ -300,8 +317,81 @@ void HttpRequest::uploadFile(const std::string& file, const std::string& content
 }
 void HttpRequest::downloadFile(const std::string& file)
 {
-    
+    assert(m_haveHandleHead);
+    bool isEnd = false;
+    ssize_t nread = 0;
+    ssize_t writtenBytes = 0;
+    bool haveHandleHead = false;
+    bool isDownFile = false;
+
+    std::ofstream output(file, std::ios::binary);
+    if (!output){
+        std::cout << "open file error" << file << std::endl;
+    }
+
+    output.write(m_buffer.peek(), m_buffer.readableBytes());
+    writtenBytes += m_buffer.readableBytes();
+    m_buffer.retrieve(m_buffer.readableBytes());
+
+    std::cout << "Content-Length: " << getRequestProperty("Content-Length");
+
+    while (!isEnd)
+    {
+        nread = sockets::read(m_sockfd, m_buffer.beginWrite(), kBufferSize);
+        if (0 < nread){
+            std::cout << "sockets::read" << std::endl;
+        }
+
+        m_buffer.hasWritten(nread);
+        std::cout << "sockets::read(): nread: " << nread << " remain: " 
+                << m_buffer.wirteableBytes() << " writtenBytes: " << writtenBytes << std::endl;
+
+        size_t remain = kBufferSize - nread;
+        while (remain > 0)
+        {
+            size_t n = sockets::read(m_sockfd, m_buffer.beginWrite(), remain);
+            if (n < 0){
+                std::cout << "sockets::read failed" << std::endl; 
+            }
+
+            m_buffer.hasWritten(nread);
+            if (0 == nread){
+                std::cout << "sockets::read finish" << std::endl;
+                isEnd = true;
+                break;
+            }
+            remain = remain - n;
+        }
+
+        output.write(m_buffer.peek(), m_buffer.readableBytes());
+        writtenBytes += m_buffer.readableBytes();
+        m_buffer.retrieve(m_buffer.readableBytes());
+        
+    }
+
+    std::cout << " writtenBytes " << writtenBytes << std::endl;
+
+    output.close();
+    sockets::close(m_sockfd);
 }
+
+void HttpRequest::splitString(const std::string& s, std::vector<std::string>& v, const std::string& c)
+{
+    std::string::size_type pos1, pos2;
+    pos2 = s.find(c);
+    pos1 = 0;
+    while (std::string::npos != pos2)
+    {
+        v.push_back(s.substr(pos1, pos2-pos1));
+        pos1 = pos2 + c.size();
+        pos2 = s.find(c, pos1);
+    }
+
+    if (pos1 != s.length()){
+        v.push_back(s.substr(pos1));
+    }    
+}
+
 
 
 

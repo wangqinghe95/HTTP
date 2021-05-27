@@ -145,7 +145,7 @@ public:
     {
         std::cout << "URL: " << m_httpUrl << std::endl;
     }
-    ~HttpUrl();
+    ~HttpUrl(){}
 
     enum HttpUrlMatch
     {
@@ -167,9 +167,9 @@ public:
         v.push_back(m_httpUrl);
         v.push_back(m_httpUrl.substr(pos1, pos2-pos1));
         v.push_back(m_httpUrl.substr(pos2+1));
-        std::cout << 'v[0] = ' << v[0] << std::endl;
-        std::cout << 'v[1] = ' << v[1] << std::endl;
-        std::cout << 'v[2] = ' << v[2] << std::endl;
+        std::cout << "v[0] = " << v[0] << std::endl;
+        std::cout << "v[1] = " << v[1] << std::endl;
+        std::cout << "v[2] = " << v[2] << std::endl;
         return v;
     }
 
